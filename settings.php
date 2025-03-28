@@ -31,4 +31,16 @@ if ($ADMIN->fulltree) {
         get_string('usecachedesc', 'filter_outgoing'),
         true
     ));
+    $settings->add(new admin_setting_configcheckbox(
+        'filter_outgoing/usecurlsecurityblockedhosts',
+        get_string('usecurlsecurityblockedhosts', 'filter_outgoing'),
+        get_string('usecurlsecurityblockedhostsdesc', 'filter_outgoing'),
+        true
+    ));
+    $settings->add(new admin_setting_configtextarea(
+        'filter_outgoing/denylist',
+        get_string('denylist', 'filter_outgoing'),
+        get_string('denylistdesc', 'filter_outgoing'),
+        ''
+    ));
 }

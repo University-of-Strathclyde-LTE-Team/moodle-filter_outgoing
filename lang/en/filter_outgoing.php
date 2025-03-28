@@ -24,3 +24,8 @@ $string['moreinfoemail'] = 'The Myplace page at {$a->url} is reporting it is blo
 Can you please provide more information as to why';
 $string['usecache'] = 'Use content hash cache';
 $string['usecachedesc'] = 'Use content hash cache';
+$string['usecurlsecurityblockedhosts'] = 'Use curl security blocked hosts';
+$string['usecurlsecurityblockedhostsdesc'] = 'Include the curl blocked hosts list as well';
+
+$string['denylist'] = 'Denylist';
+$string['denylistdesc'] = 'One host per line, you can use * as a wildcard';

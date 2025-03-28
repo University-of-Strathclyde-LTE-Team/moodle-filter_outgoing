@@ -17,6 +17,7 @@ namespace filter_outgoing;
 
 defined('MOODLE_INTERNAL') || die();
 
+use core\files\curl_security_helper;
 use core\output\notification;
 
 class text_filter extends \core_filters\text_filter {
@@ -34,6 +35,33 @@ class text_filter extends \core_filters\text_filter {
     public function setup($page, $context) {
         $this->page = $page;
         $this->context = $context;
+    }
+    protected function get_denied_hosts() {
+        global $CFG;
+        $denylist = get_config('filter_outgoing', 'denylist');
+        $denylist = array_filter(array_map(
+            'trim',
+            explode("\n", $denylist)),
+            function ($entry) {
+                return !empty($entry);
+            }
+        );
+        if(get_config('filter_outgoing', 'usecurlsecurityblockedhosts')) {
+            if (isset($CFG->curlsecurityblockedhosts)) {
+                $denylist = array_merge(
+                    $denylist,
+                    array_filter(
+                        array_map(
+                            'trim',
+                            explode("\n", $CFG->curlsecurityblockedhosts)),
+                        function ($entry) {
+                            return !empty($entry);
+                        }
+                    )
+                );
+            }
+        }
+        return $denylist;
     }
     public function filter($text, array $options = array()) {
         global $OUTPUT;
@@ -66,10 +94,11 @@ class text_filter extends \core_filters\text_filter {
         $isinline = false;
         $badtrap = new \moodle_url('/filter/outgoing/index.php');
         $badtrap = $badtrap->out();
-        $result = preg_replace_callback(self::linkpattern, function($matches) use ($badtrap, $filteredmessage, $OUTPUT) {
+        $denylist = $this->get_denied_hosts();
+        $result = preg_replace_callback(self::linkpattern, function($matches) use ($denylist, $badtrap, $filteredmessage, $OUTPUT) {
             $inline = (in_array($matches['tag'], $this->inlinetags));
             $fulltext = $matches[0];
-            foreach ($this->denylist as $deny) {
+            foreach ($denylist as $deny) {
                 $denyregex = str_replace(['*', '.'], ['.*', '\.'], $deny);
                 $denyregex = '/' . $denyregex . '/i';
                 if ($inline) {
